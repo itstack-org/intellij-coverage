@@ -171,16 +171,17 @@ public class LineEnumerator extends MethodVisitor implements Opcodes {
   }
 
   public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
-    super.visitTableSwitchInsn(min, max, dflt, labels);
-    if (!myHasExecutableLines) return;
-    rememberSwitchLabels(dflt, labels);
-    final LineData lineData = myClassInstrumenter.getLineData(myCurrentLine);
-    if (lineData != null) {
-      SwitchData switchData = lineData.addSwitch(myCurrentSwitch++, min, max);
-      mySwitchLabels.put(dflt, switchData);
+    if (myHasExecutableLines) {
+      rememberSwitchLabels(dflt, labels);
+      final LineData lineData = myClassInstrumenter.getLineData(myCurrentLine);
+      if (lineData != null) {
+        SwitchData switchData = lineData.addSwitch(myCurrentSwitch++, min, max);
+        mySwitchLabels.put(dflt, switchData);
+      }
+      myState = SEEN_NOTHING;
+      myHasInstructions = true;
     }
-    myState = SEEN_NOTHING;
-    myHasInstructions = true;
+    super.visitTableSwitchInsn(min, max, dflt, labels);
   }
 
   private void rememberSwitchLabels(final Label dflt, final Label[] labels) {
@@ -281,6 +282,19 @@ public class LineEnumerator extends MethodVisitor implements Opcodes {
     }
   }
 
+  public void removeLastSwitch(Label dflt, Label... labels) {
+    mySwitchLabels.remove(dflt);
+    if (mySwitches != null) {
+      for (Label label : labels) {
+        mySwitches.remove(label);
+      }
+    }
+    final LineData lineData = myClassInstrumenter.getLineData(myCurrentLine);
+    if (lineData != null) {
+      lineData.removeSwitch(--myCurrentSwitch);
+    }
+  }
+
   public void visitLdcInsn(final Object cst) {
     super.visitLdcInsn(cst);
     if (!myHasExecutableLines) return;
@@ -308,6 +322,10 @@ public class LineEnumerator extends MethodVisitor implements Opcodes {
 
   public String getDescriptor() {
     return mySignature;
+  }
+
+  public Instrumenter getInstrumenter() {
+    return myClassInstrumenter;
   }
 
   private static List<LineEnumeratorFilter> createLineEnumeratorFilters() {

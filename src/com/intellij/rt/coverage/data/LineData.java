@@ -148,6 +148,10 @@ public class LineData implements CoverageData {
     return getOrCreateJumpsAndSwitches().addSwitch(switchNumber, keys);
   }
 
+  public void removeSwitch(int switchNumber) {
+    getOrCreateJumpsAndSwitches().removeSwitch(switchNumber);
+  }
+
   public SwitchData getSwitchData(int switchNumber) {
     return getOrCreateJumpsAndSwitches().getSwitchData(switchNumber);
   }
