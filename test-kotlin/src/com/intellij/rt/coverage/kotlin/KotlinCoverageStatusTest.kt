@@ -17,11 +17,11 @@
 package com.intellij.rt.coverage.kotlin
 
 
-import com.intellij.rt.coverage.assertEqualsLines
-import com.intellij.rt.coverage.extractCoverageDataFromFile
-import com.intellij.rt.coverage.pathToFile
-import com.intellij.rt.coverage.runWithCoverage
+import com.intellij.rt.coverage.*
+import kotlinTestData.threadSafe.data.EXPECTED_HITS
+import kotlinTestData.threadSafe.structure.CLASSES
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -130,6 +130,23 @@ class KotlinCoverageStatusTest {
     @Test
     fun testSealedClassConstructor() = test("sealedClassConstructor",
             "SealedClass", "SealedClassWithArgs", "ClassWithPrivateDefaultConstructor")
+
+    @Test
+    @Ignore("Not implemented")
+    fun testThreadSafeStructure() {
+        val expected = (1..CLASSES).associateWith { "FULL" }
+        val project = runWithCoverage(myDataFile, "threadSafe.structure", false)
+        assertEqualsLines(project, expected, (0 until CLASSES).map { "kotlinTestData.threadSafe.structure.Class$it" })
+    }
+
+    @Test
+    @Ignore("Not implemented")
+    fun testThreadSafeData() {
+        val project = runWithCoverage(myDataFile, "threadSafe.data", false)
+        val classes = listOf("kotlinTestData.threadSafe.data.SimpleClass")
+        val data = mergeClasses(project, classes)
+        assertEquals(EXPECTED_HITS, getLineHits(data, 24))
+    }
 
     @Test
     fun testFunInterface() = test("funInterface", "TestKt", "TestKt\$test\$1")

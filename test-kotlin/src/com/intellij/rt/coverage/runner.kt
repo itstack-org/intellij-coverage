@@ -24,19 +24,26 @@ import java.io.File
 import java.nio.file.Paths
 
 
-fun runWithCoverage(coverageDataFile: File, testName: String, sampling: Boolean, calcUnloaded: Boolean): ProjectData {
+fun runWithCoverage(coverageDataFile: File, testName: String, sampling: Boolean, calcUnloaded: Boolean = false): ProjectData {
     val classPath = System.getProperty("java.class.path")
     return CoverageStatusTest.runCoverage(classPath, coverageDataFile, "kotlinTestData.*", "kotlinTestData.$testName.Test", sampling, calcUnloaded)
 }
 
 internal fun assertEqualsLines(project: ProjectData, expectedLines: Map<Int, String>, classNames: List<String>) {
+    val allData = mergeClasses(project, classNames)
+    val lines = allData.getLinesData().associateBy({ it.lineNumber }, { it.status.toByte() })
+    assertEquals(expectedLines, statusToString(lines))
+}
+
+internal fun mergeClasses(project: ProjectData, classNames: List<String>): ClassData {
     val allData = ClassData("")
     classNames
             .map { project.getClassData(it) }
             .forEach { allData.merge(it) }
-    val lines = allData.getLinesData().associateBy({ it.lineNumber }, { it.status.toByte() })
-    assertEquals(expectedLines, statusToString(lines))
+    return allData
 }
+
+internal fun getLineHits(data: ClassData, line: Int) = data.getLinesData().single { it.lineNumber == line }.hits
 
 private fun statusToString(lines: Map<Int, Byte>) = lines.mapValues {
     when (it.value.toInt()) {
