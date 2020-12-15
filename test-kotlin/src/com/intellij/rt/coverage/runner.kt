@@ -48,6 +48,9 @@ internal fun assertEqualsLines(project: ProjectData, expectedLines: Map<Int, Str
     val expected = expectedLines.toList()
     val actual = coverageLines(project, classNames).toList()
     var fail = false
+    if (expected.isNotEmpty() && actual.isEmpty()) {
+        System.err.println("Coverage report is empty.")
+    }
     compareCoverage(expected, actual, wrongLineCoverage = { i, j ->
         System.err.println("Line ${expected[i].first}: expected ${expected[i].second} but ${actual[j].second} found")
         fail = true

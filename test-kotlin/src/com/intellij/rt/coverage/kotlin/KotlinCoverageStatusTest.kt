@@ -18,10 +18,6 @@ package com.intellij.rt.coverage.kotlin
 
 
 import com.intellij.rt.coverage.*
-import com.intellij.rt.coverage.allNames
-import com.intellij.rt.coverage.assertEqualsLines
-import com.intellij.rt.coverage.extractCoverageDataFromFile
-import com.intellij.rt.coverage.pathToFile
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -80,6 +76,13 @@ class KotlinCoverageStatusTest {
 
     @Test
     fun testReified() = test("inline.reified")
+
+    @Test
+    @Ignore("To be fixed")
+    fun testInlineCoroutinesTracing() = test("inline.coroutines.tracing", classes = all, sampling = false)
+
+    @Test
+    fun testInlineCoroutinesSampling() = test("inline.coroutines.sampling", classes = all)
 
     @Test
     fun testMultiplyFilesInline() = test("inline.multiplyFiles", "Test2Kt",
