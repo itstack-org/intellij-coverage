@@ -39,6 +39,9 @@ class KotlinCoverageStatusTest {
     }
 
     @Test
+    fun testSimpleIfElse() = test("simple.ifelse", sampling = false)
+
+    @Test
     fun testDefaultArgsCovered() = test("defaultArgs.covered")
 
     @Test
@@ -170,9 +173,14 @@ class KotlinCoverageStatusTest {
     fun testFunInterface() = test("funInterface", "TestKt", "TestKt\$test\$1")
 
     @Test
+    fun test_IDEA_57695() {
+        val project = runWithCoverage(myDataFile, "fixes.IDEA_57695", false)
+        assertEqualsLines(project, hashMapOf(1 to "PARTIAL", 2 to "FULL"), listOf("kotlinTestData.fixes.IDEA_57695.TestClass"))
+    }
+
+    @Test
     fun test_IDEA_250825() = test("fixes.IDEA_250825", "JavaTest", fileName = "JavaTest.java", sampling = false)
 
-    private val all = arrayOf("ALL CLASSES")
     private fun test(testName: String, vararg classes: String = arrayOf("TestKt"),
                      sampling: Boolean = true, fileName: String = "test.kt",
                      calcUnloaded: Boolean = false) {
@@ -180,6 +188,6 @@ class KotlinCoverageStatusTest {
         val expected = extractCoverageDataFromFile(testFile)
         val project = runWithCoverage(myDataFile, testName, sampling, calcUnloaded)
         val fullClassNames = classes.map { "kotlinTestData.$testName.$it" }
-        assertEqualsLines(project, expected, if (classes.contentEquals(all)) allNames else fullClassNames)
+        assertEqualsLines(project, expected, if (classes.contains(all)) listOf(all) else fullClassNames)
     }
 }
